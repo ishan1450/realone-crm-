@@ -36,19 +36,13 @@ export default {
       );
     }
 
-    // 2. Fetch static assets from the compiled build output directory
-    let response = await env.ASSETS.fetch(request);
-
-    // 3. SPA Fallback: for navigation GET requests that do not match a static file, serve index.html
-    if (response.status === 404 && request.method === 'GET') {
-      const acceptHeader = request.headers.get('Accept') || '';
-      // Only fallback to index.html for page navigation or requests expecting HTML/plain requests
-      if (!url.pathname.includes('.') || acceptHeader.includes('text/html')) {
-        const indexRequest = new Request(new URL('/index.html', request.url), request);
-        response = await env.ASSETS.fetch(indexRequest);
-      }
+    // 2. If the request is for a static asset with a file extension (e.g., .js, .css, .svg, .png, .ico)
+    if (url.pathname.includes('.')) {
+      return env.ASSETS.fetch(request);
     }
 
-    return response;
+    // 3. SPA Fallback: for all client routes (/login, /dashboard, /leads, etc.), serve index.html with 200 OK
+    const indexUrl = new URL('/index.html', request.url);
+    return env.ASSETS.fetch(new Request(indexUrl.toString(), request));
   },
 };
