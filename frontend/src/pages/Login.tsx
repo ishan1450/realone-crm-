@@ -27,8 +27,11 @@ export const Login: React.FC = () => {
           navigate('/pending-approval');
           return;
         }
-        if (err.data?.detail?.toLowerCase().includes('rejected')) {
-          navigate('/rejected-account');
+        if (
+          err.data?.detail?.toLowerCase().includes('rejected') ||
+          err.data?.detail?.toLowerCase().includes('access denied')
+        ) {
+          navigate('/rejected-account', { state: { email } });
           return;
         }
         setError(err.message);
@@ -62,9 +65,22 @@ export const Login: React.FC = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-6 shadow-sm border border-slate-200 rounded-xl sm:px-10">
           {error && (
-            <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-lg flex items-start gap-3 text-rose-700 text-xs">
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{error}</span>
+            <div className="mb-5 p-3.5 bg-rose-50 border border-rose-200 rounded-lg text-rose-700 text-xs space-y-2">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="font-medium">{error}</span>
+              </div>
+              {(error.toLowerCase().includes('rejected') || error.toLowerCase().includes('access denied')) && (
+                <div className="pl-7 pt-1">
+                  <Link
+                    to="/rejected-account"
+                    state={{ email }}
+                    className="inline-flex items-center gap-1 font-bold text-rose-800 underline hover:text-rose-900"
+                  >
+                    Try Again for Access &rarr;
+                  </Link>
+                </div>
+              )}
             </div>
           )}
 

@@ -20,6 +20,10 @@ export const authService = {
     return api.post<User>('/auth/register', payload);
   },
 
+  async reapply(payload: { email: string; full_name?: string; password?: string }): Promise<User> {
+    return api.post<User>('/auth/reapply', payload);
+  },
+
   async getMe(): Promise<User> {
     return api.get<User>('/auth/me');
   },

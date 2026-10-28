@@ -11,8 +11,8 @@ export const Agents: React.FC = () => {
   const fetchAgents = async () => {
     setIsLoading(true);
     try {
-      const data = await userService.getUsers('agent');
-      setAgents(data);
+      const data = await userService.getUsers('agent', 'approved');
+      setAgents(data.filter((a) => a.approval_status === 'approved'));
     } catch {
       setAgents([]);
     } finally {

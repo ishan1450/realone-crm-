@@ -97,3 +97,86 @@ def test_deactivated_account_loses_access(client, deactivated_user, db):
     )
     assert leads_resp.status_code == 403
     assert "deactivated" in leads_resp.json()["detail"].lower()
+
+
+def test_rejected_user_shows_access_denied_and_can_reapply(client, admin_token, pending_user, db):
+    # 1. Admin rejects the pending user
+    rej_resp = client.put(
+        f"/api/v1/users/{pending_user.id}/approval",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"action": "reject"},
+    )
+    assert rej_resp.status_code == 200
+    assert rej_resp.json()["approval_status"] == "rejected"
+    assert rej_resp.json()["is_active"] is False
+
+    # 2. When the rejected user tries to log in, it must show Access Denied
+    login_resp = client.post(
+        "/api/v1/auth/login",
+        json={"email": pending_user.email, "password": "Password123!"},
+    )
+    assert login_resp.status_code == 403
+    error_detail = login_resp.json()["detail"].lower()
+    assert "access denied" in error_detail
+    assert "rejected" in error_detail
+    assert "try again" in error_detail
+
+    # 3. Rejected user tries to re-apply for access via registration endpoint
+    reapply_resp = client.post(
+        "/api/v1/auth/register",
+        json={
+            "full_name": "Updated Candidate Name",
+            "email": pending_user.email,
+            "password": "NewSecurePassword123!",
+            "confirm_password": "NewSecurePassword123!",
+        },
+    )
+    assert reapply_resp.status_code == 201
+    assert reapply_resp.json()["approval_status"] == "pending"
+    assert reapply_resp.json()["is_active"] is False
+
+
+def test_cannot_activate_unapproved_or_rejected_agent(client, admin_token, pending_user):
+    # Cannot activate a pending user
+    act_resp = client.put(
+        f"/api/v1/users/{pending_user.id}/status",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"is_active": True},
+    )
+    assert act_resp.status_code == 400
+    assert "cannot activate" in act_resp.json()["detail"].lower()
+
+    # Reject user
+    client.put(
+        f"/api/v1/users/{pending_user.id}/approval",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"action": "reject"},
+    )
+
+    # Cannot activate a rejected user
+    act_resp2 = client.put(
+        f"/api/v1/users/{pending_user.id}/status",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"is_active": True},
+    )
+    assert act_resp2.status_code == 400
+    assert "cannot activate" in act_resp2.json()["detail"].lower()
+
+
+def test_rejected_agent_never_in_active_agents_list(client, admin_token, pending_user):
+    # Reject user
+    client.put(
+        f"/api/v1/users/{pending_user.id}/approval",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"action": "reject"},
+    )
+
+    # Fetch active agents
+    agents_resp = client.get(
+        "/api/v1/users/agents",
+        headers={"Authorization": f"Bearer {admin_token}"},
+    )
+    assert agents_resp.status_code == 200
+    agent_ids = [a["id"] for a in agents_resp.json()]
+    assert pending_user.id not in agent_ids
+

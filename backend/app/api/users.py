@@ -5,6 +5,9 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.models.user import User, UserRole, ApprovalStatus
+from app.models.lead import Lead
+from app.models.assignment_state import RoundRobinState
+from app.services.activity_service import log_lead_activity, ActivityType
 from app.schemas.user import UserResponse, UserApprovalUpdate, UserStatusUpdate, UserRoleUpdate
 from app.core.permissions import require_admin, get_current_user
 
@@ -89,6 +92,26 @@ def update_approval_status(
         user.approval_status = ApprovalStatus.REJECTED.value
         user.approved_at = datetime.utcnow()
         user.approved_by = current_user.id
+        user.is_active = False
+
+        # Ensure rejected agent is stripped from any assigned leads
+        leads = db.query(Lead).filter(Lead.assigned_agent_id == user.id).all()
+        for lead in leads:
+            lead.assigned_agent_id = None
+            log_lead_activity(
+                db=db,
+                lead_id=lead.id,
+                activity_type=ActivityType.LEAD_REASSIGNED,
+                description=f"Lead unassigned because agent {user.full_name} was rejected",
+                actor_id=current_user.id,
+                old_values={"assigned_agent_id": user.id},
+                new_values={"assigned_agent_id": None},
+            )
+
+        # If singleton round-robin state pointed to this user, clear it
+        rr_state = db.query(RoundRobinState).filter(RoundRobinState.id == 1).first()
+        if rr_state and rr_state.last_assigned_agent_id == user.id:
+            rr_state.last_assigned_agent_id = None
     else:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -109,6 +132,7 @@ def update_user_status(
 ):
     """
     Admin only: Activate or deactivate a user account.
+    Only approved accounts can be activated.
     """
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -118,6 +142,12 @@ def update_user_status(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Administrators cannot deactivate their own account.",
+        )
+
+    if status_data.is_active and user.approval_status != ApprovalStatus.APPROVED.value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot activate an unapproved or rejected account. The account must be approved first.",
         )
 
     user.is_active = status_data.is_active

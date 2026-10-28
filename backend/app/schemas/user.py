@@ -42,3 +42,10 @@ class UserStatusUpdate(BaseModel):
 
 class UserRoleUpdate(BaseModel):
     role: str = Field(..., description="'admin' or 'agent'")
+
+
+class UserReapply(BaseModel):
+    email: EmailStr
+    full_name: Optional[str] = None
+    password: Optional[str] = None
+
