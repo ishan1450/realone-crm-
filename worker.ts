@@ -7,18 +7,22 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
 
-    // 1. Worker API routes: do not intercept API requests with SPA fallback
+    // 1. Worker API routes: proxy to backend if configured, never intercept with SPA HTML
     if (url.pathname.startsWith('/api/')) {
       if (env.BACKEND_URL) {
         const backendBase = env.BACKEND_URL.replace(/\/+$/, '');
         const targetUrl = new URL(url.pathname + url.search, backendBase);
         const headers = new Headers(request.headers);
         headers.set('Host', new URL(backendBase).host);
+        // Bypass ngrok warning page when proxying through ngrok tunnels
+        headers.set('ngrok-skip-browser-warning', 'true');
+
+        const hasBody = !['GET', 'HEAD'].includes(request.method);
 
         return fetch(new Request(targetUrl.toString(), {
           method: request.method,
           headers: headers,
-          body: request.body,
+          body: hasBody ? request.body : undefined,
           redirect: 'follow',
         }));
       }
@@ -36,12 +40,12 @@ export default {
       );
     }
 
-    // 2. If the request is for a static asset with a file extension (e.g., .js, .css, .svg, .png, .ico)
+    // 2. Static assets with a file extension (e.g. .js, .css, .svg, .png)
     if (url.pathname.includes('.')) {
       return env.ASSETS.fetch(request);
     }
 
-    // 3. SPA Fallback: for all client routes (/login, /dashboard, /leads, etc.), serve index.html with 200 OK
+    // 3. SPA Fallback: for all client routes (/login, /dashboard, etc.), serve index.html with 200 OK
     const indexUrl = new URL('/index.html', request.url);
     return env.ASSETS.fetch(new Request(indexUrl.toString(), request));
   },
