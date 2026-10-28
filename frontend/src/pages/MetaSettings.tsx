@@ -799,7 +799,7 @@ export const MetaSettings: React.FC = () => {
                   type="text"
                   value={pageName}
                   onChange={(e) => setPageName(e.target.value)}
-                  placeholder="e.g. Apex Luxury Real Estate"
+                  placeholder="e.g. Real One Luxury Real Estate"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
                 />
               </div>

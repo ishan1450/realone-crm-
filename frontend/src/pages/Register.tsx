@@ -82,7 +82,7 @@ export const Register: React.FC = () => {
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="w-12 h-12 rounded-xl bg-blue-600 text-white font-bold text-lg flex items-center justify-center mx-auto shadow-sm">
-          RE
+          RO
         </div>
         <h2 className="mt-4 text-2xl font-bold text-slate-900 tracking-tight">
           Request Agent Access

@@ -5,7 +5,7 @@ from pydantic import Field
 
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Real Estate CRM"
+    PROJECT_NAME: str = "Real One CRM"
     API_V1_STR: str = "/api/v1"
     
     # Database

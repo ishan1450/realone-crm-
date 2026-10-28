@@ -51,10 +51,10 @@ export const DashboardLayout: React.FC = () => {
         {/* Brand */}
         <div className="h-16 flex items-center px-6 border-b border-slate-100 gap-3">
           <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-sm">
-            RE
+            RO
           </div>
           <div>
-            <h1 className="text-sm font-bold text-slate-900 tracking-tight leading-none">Apex Estates CRM</h1>
+            <h1 className="text-sm font-bold text-slate-900 tracking-tight leading-none">Real One CRM</h1>
             <span className="text-[11px] text-slate-500 font-medium">Meta Lead Engine</span>
           </div>
         </div>
@@ -120,8 +120,8 @@ export const DashboardLayout: React.FC = () => {
           <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
             <div className="h-16 flex items-center justify-between px-6 border-b border-slate-200">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center">RE</div>
-                <span className="font-bold text-slate-900 text-sm">Apex Estates CRM</span>
+                <div className="w-8 h-8 rounded-lg bg-blue-600 text-white font-bold flex items-center justify-center">RO</div>
+                <span className="font-bold text-slate-900 text-sm">Real One CRM</span>
               </div>
               <button onClick={() => setMobileMenuOpen(false)} className="text-slate-500">
                 <X className="w-5 h-5" />

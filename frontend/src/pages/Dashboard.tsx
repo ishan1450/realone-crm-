@@ -84,7 +84,7 @@ export const Dashboard: React.FC = () => {
               Welcome back, {user?.full_name}
             </h1>
             <p className="text-xs text-slate-500 mt-1">
-              Apex Estates Management Overview • All Leads Across Agents & Admins
+              Real One Management Overview • All Leads Across Agents & Admins
             </p>
           </div>
           <div className="flex items-center gap-2">
