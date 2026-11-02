@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_, desc, asc
 
 from app.db.database import get_db
-from app.models.user import User, UserRole
+from app.models.user import User, UserRole, ApprovalStatus
 from app.models.lead import Lead
 from app.models.activity import LeadActivity
 from app.schemas.lead import (
