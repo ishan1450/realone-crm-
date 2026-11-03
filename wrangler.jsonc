@@ -10,7 +10,7 @@
     "run_worker_first": ["/api/*"]
   },
   "vars": {
-    "BACKEND_URL": "https://biparietal-dumpiest-janita.ngrok-free.dev"
+    "BACKEND_URL": "https://realone-crm.onrender.com"
   },
   "observability": {
     "enabled": true
